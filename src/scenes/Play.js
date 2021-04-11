@@ -53,9 +53,45 @@ class Play extends Phaser.Scene {
             }),
             frameRate: 30
         });
+
+        // initialize score
+        this.p1score = 0;
+        //display score 
+        let scoreConfig = {
+            fontFamily: "Courier",
+            fontSize: "28px",
+            backgroundColor: "#F3B141",
+            color: "#843605",
+            align: "right",
+            padding: {
+                top: 5,
+                bottom: 5,
+            },
+            fixedWidth: 100
+        }
+        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1score, scoreConfig);
+        
+        // GAME OVER flag
+        this.gameOver = false;
+        
+        // 60 second play clock
+        scoreConfig.fixedWidth = 0;
+        this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
+            this.add.text(game.config.width/2, game.config.height/2, "GAME OVER", scoreConfig).setOrigin(0.5);
+            this.add.text(game.config.width/2, game.config.height/2 + 64, "(F)ire to Restart or Press ← for Menu", scoreConfig).setOrigin(0.5);
+        }, null, this);
     }
 
     update(){
+        // check key input for restart
+        if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)) {
+            this.scene.restart();
+        }
+
+        if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+            this.scene.start("menuScene");
+        }
+        
         this.starfield.tilePositionX -= starSpeed;
 
         //update rocket
@@ -78,6 +114,13 @@ class Play extends Phaser.Scene {
             this.p1Rocket.reset();
             this.shipExplode(this.ship01);
         }
+
+        if(!this.gameOver) {
+            this.p1Rocket.update();                  // update rocket sprite
+            this.ship01.update();                    // update spaceships (x3)
+            this.ship02.update();
+            this.ship03.update();
+        }
     }
     checkCollision(rocket, ship) {
         // simple AABB checking
@@ -94,7 +137,7 @@ class Play extends Phaser.Scene {
         shipExplode(ship){
             // temporary hide ship
             ship.alpha = 0;
-            //create explosion sprite at ship's position
+            // create explosion sprite at ship's position
             let boom = this.add.sprite(ship.x, ship.y, "explosion").setOrigin(0, 0);
             boom.anims.play("explode");
             boom.on("animationcomplete", () => {
@@ -102,6 +145,11 @@ class Play extends Phaser.Scene {
                 ship.alpha = 1;
                 boom.destroy();
             });
+            // add score and repaint
+            this.p1score += ship.points;
+            this.scoreLeft.text = this.p1score;
+
+            this.sound.play("sfx_explosion");
         }
 
 }
