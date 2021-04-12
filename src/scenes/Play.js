@@ -74,15 +74,16 @@ class Play extends Phaser.Scene {
         // GAME OVER flag
         this.gameOver = false;
         
-        // 60 second play clock
+        // 60-second play clock
         scoreConfig.fixedWidth = 0;
-        this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
-            this.add.text(game.config.width/2, game.config.height/2, "GAME OVER", scoreConfig).setOrigin(0.5);
-            this.add.text(game.config.width/2, game.config.height/2 + 64, "Press (R) to Restart the game or Press ← for Menu", scoreConfig).setOrigin(0.5);
+        this.clock = this.time.delayedCall(60000, () => {
+        this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
+        this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for Menu', scoreConfig).setOrigin(0.5);
+        this.gameOver = true;
         }, null, this);
     }
 
-    update(){
+    update() {
         // check key input for restart
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)) {
             this.scene.restart();
@@ -122,6 +123,7 @@ class Play extends Phaser.Scene {
             this.ship03.update();
         }
     }
+
     checkCollision(rocket, ship) {
         // simple AABB checking
         if(rocket.x < ship.x + ship.width && 
